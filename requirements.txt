@@ -1,7 +1,7 @@
-streamlit==1.32.0
+streamlit
 opencv-python-headless
 torch
 torchvision
-realesrgan
-gfpgan
 Pillow
+basicsr
+realesrgan
