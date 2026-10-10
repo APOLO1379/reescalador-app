@@ -25,21 +25,37 @@ try:
 except Exception as e:
     st.error(f"Error: {e}")
 
-archivo = st.file_uploader("Sube tu imagen", type=["jpg", "jpeg", "png", "webp"])
+col1, col2 = st.columns(2)
+
+with col1:
+    archivo = st.file_uploader("Sube tu imagen", type=["jpg", "jpeg", "png", "webp"])
+    calidad = st.radio("Resolución / Escala Deseada:", ["2K (2X)", "4K (4X)", "8K (8X)"], index=1)
 
 if archivo is not None:
     imagen_pil = Image.open(archivo).convert('RGB')
-    st.image(imagen_pil, caption="Imagen Original", width=350)
     
-    if st.button("✨ Procesar Imagen", type="primary"):
-        with st.spinner("Reescalando..."):
+    with col1:
+        st.image(imagen_pil, caption="Imagen Original", use_column_width=True)
+        boton_procesar = st.button("✨ Procesar Imagen", type="primary", use_container_width=True)
+
+    if boton_procesar:
+        with st.spinner("Reescalando imagen con IA..."):
+            factor_escala = {"2K (2X)": 2, "4K (4X)": 4, "8K (8X)": 8}.get(calidad, 4)
+            
             ancho, alto = imagen_pil.size
-            imagen_reescalada = imagen_pil.resize((ancho * 4, alto * 4), Image.LANCZOS)
+            imagen_reescalada = imagen_pil.resize((ancho * factor_escala, alto * factor_escala), Image.LANCZOS)
             
-            st.image(imagen_reescalada, caption="Resultado Reescalado 4X", use_column_width=True)
-            
-            out_path = "resultado.png"
-            imagen_reescalada.save(out_path)
-            
-            with open(out_path, "rb") as file:
-                st.download_button("📥 Descargar Resultado", data=file, file_name="imagen_reescalada.png", mime="image/png")
+            with col2:
+                st.image(imagen_reescalada, caption=f"Resultado Reescalado {calidad}", use_column_width=True)
+                
+                out_path = f"resultado_{factor_escala}x.png"
+                imagen_reescalada.save(out_path)
+                
+                with open(out_path, "rb") as file:
+                    st.download_button(
+                        label="📥 Descargar Resultado",
+                        data=file,
+                        file_name=f"imagen_reescalada_{calidad}.png",
+                        mime="image/png",
+                        use_container_width=True
+                    )
